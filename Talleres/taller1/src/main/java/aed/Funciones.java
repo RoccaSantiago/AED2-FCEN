@@ -1,7 +1,5 @@
 package aed;
 
-import org.omg.CORBA.FloatSeqHelper;
-
 class Funciones {
     int cuadrado(int x) {
         return x*x;
@@ -35,7 +33,7 @@ class Funciones {
     int factorialRecursivo(int n) {
         int res = 1;
         if (n>1){
-            res = res * n * factorialRecursivo(n-1);
+            res = n * factorialRecursivo(n-1);
         }
         return res;
     }
@@ -47,18 +45,18 @@ class Funciones {
         }
         else {
             for (int i = 2; i < n; i++){
-            if (n%i==0){
-                return false;
-            } 
+                if (n%i==0){
+                    return false;
+                } 
+            }
+            return true;
         }
-        return true;
-    }
     }
 
     int sumatoria(int[] numeros) {
         int res = 0;
         for (int i = 0; i < numeros.length; i++){
-            res = res + numeros[i];
+            res += numeros[i];
         }
         return res;
     }
@@ -70,7 +68,7 @@ class Funciones {
                 return i;
             }
         }
-        return 0;
+        return -1;
     }
 
 
@@ -91,12 +89,37 @@ class Funciones {
         }
         return true;
     }
-
-    boolean esPrefijo(String s1, String s2) {
-        return s2.startsWith(s1);
+    
+    boolean esPrefijo(String s1, String s2){
+        if (s1.length()<=s2.length()){
+            for (int i=0; i < s1.length();i++) {
+                if (s1.charAt(i)!=s2.charAt(i)){
+                    return false;
+                }
+            } 
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     boolean esSufijo(String s1, String s2) {
-        return s2.endsWith(s1);
+        if (s1.length()<=s2.length()){
+            int j=0;
+            for (int i = s2.length()-s1.length(); i <s2.length();i++){
+                    if (s1.charAt(j)!=s2.charAt(i)){
+                        return false;
+                    }
+                    else{
+                        j=j+1;
+                    }
+                }
+            return true;
+            }
+            
+        else{
+            return false;
+        }
     }
 }
