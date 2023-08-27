@@ -11,7 +11,10 @@ class CoberturaTests {
 
     @Test
     void testFizzBuzz() {
-        assertEquals("A","B");
+        assertEquals("FizzBuzz", cobertura.fizzBuzz(15));
+        assertEquals("Fizz", cobertura.fizzBuzz(3));
+        assertEquals("Buzz", cobertura.fizzBuzz(5));
+        assertEquals("2", cobertura.fizzBuzz(2));
     }
 
     @Test
