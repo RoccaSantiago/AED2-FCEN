@@ -19,7 +19,7 @@ class CoberturaTests {
 
     @Test
     void testNumeroCombinatorio() {
-        assertTrue(false);
+        assertTrue(false,);
     }
 
     @Test
