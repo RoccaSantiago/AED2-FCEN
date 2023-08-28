@@ -25,6 +25,24 @@ class Archivos {
     }
 
     void imprimirPiramide(PrintStream salida, int alto) {
-        
+        for (int altura=1; altura<=alto; altura++){
+            String fila = "";
+            int asteriscos = (2*altura) - 1;
+            int espacios = alto - altura;
+            for (int a=0; a<espacios;a++){
+                fila+=" ";
+            }
+            for (int b=0; b<asteriscos;b++){
+                fila+="*";
+            }
+            for (int c=0; c<espacios;c++){
+                fila+=" ";
+            }
+            if (alto ==altura){
+                fila+= "\n";
+            }
+            salida.println(fila);
+            fila = "";
+        }  
     }
 }

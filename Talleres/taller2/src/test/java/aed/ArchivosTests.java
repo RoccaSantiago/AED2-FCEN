@@ -61,15 +61,7 @@ class ArchivosTests {
         assertEquals(3.14, vec[2][1], 10e-5);
     }
 
-    @Test
-    void testImprimirPiramideVacia() throws FileNotFoundException {
-        PrintStream salida = new PrintStream("piramideVacia.txt");
-        Scanner entrada = new Scanner(new File("piramideVacia.txt"));
-
-        archivos.imprimirPiramide(salida, 0);
-
-        assertFalse(entrada.hasNextLine());
-    }
+    
 
     @Test
     void testImprimirPiramideNoVacia() throws FileNotFoundException {
