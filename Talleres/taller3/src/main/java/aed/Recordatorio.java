@@ -1,26 +1,31 @@
 package aed;
 
 public class Recordatorio {
+    Fecha fecha;
+    Horario horario;
+    String mensaje;
 
     public Recordatorio(String mensaje, Fecha fecha, Horario horario) {
-        throw new UnsupportedOperationException("No implementada aun");
+        this.fecha = new Fecha(fecha.dia(), fecha.mes()); 
+        this.horario = new Horario(horario.hora(),horario.minutos());
+        this.mensaje = mensaje;
     }
 
     public Horario horario() {
-        throw new UnsupportedOperationException("No implementada aun");
+        return new Horario(horario.hora(),horario.minutos());
     }
 
     public Fecha fecha() {
-        throw new UnsupportedOperationException("No implementada aun");
+        return new Fecha(fecha.dia(), fecha.mes());
     }
 
     public String mensaje() {
-        throw new UnsupportedOperationException("No implementada aun");
+        return mensaje;
     }
 
     @Override
     public String toString() {
-        throw new UnsupportedOperationException("No implementada aun");
+        return  mensaje + " @ " + fecha.toString() + " " + horario.toString();
     }
 
 }

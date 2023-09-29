@@ -10,6 +10,13 @@ class VectorDeInts implements SecuenciaDeInts {
         nElementos = 0;        
     }
     
+    public VectorDeInts(VectorDeInts vector){
+            nElementos =  vector.longitud();
+            array = new int[vector.longitud()];
+            for (int j=0; j<nElementos; j++){
+                array[j] = vector.obtener(j);
+            }
+    }
 
     public int longitud() {
         return nElementos;
@@ -64,5 +71,7 @@ class VectorDeInts implements SecuenciaDeInts {
         }
         return copia;
     }
+
+
 
 }

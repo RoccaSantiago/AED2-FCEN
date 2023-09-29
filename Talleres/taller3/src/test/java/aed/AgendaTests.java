@@ -180,7 +180,7 @@ public class AgendaTests {
 
         assertEquals(esperado, a.toString());
 
-        a.incrementarDia();
+        a.incrementarD ia();
 
         assertEquals(new Fecha(11, 05), a.fechaActual());
 
