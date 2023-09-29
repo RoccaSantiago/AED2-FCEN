@@ -9,8 +9,8 @@ public class ListaEnlazada<T> implements Secuencia<T> {
         T valor; 
         Nodo sig;
         public Nodo(T i) {
-            T valor = i;
-            Nodo sig = null;
+            valor = i;
+            sig = null;
         }
     }
 
@@ -51,7 +51,7 @@ public class ListaEnlazada<T> implements Secuencia<T> {
         for (int j=0; j<i; j++){
             primero = primero.sig;
         }
-        return actual.valor;
+        return primero.valor;
     }
 
     public void eliminar(int i) {
