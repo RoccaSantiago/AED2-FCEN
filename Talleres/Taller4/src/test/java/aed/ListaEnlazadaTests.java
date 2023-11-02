@@ -94,8 +94,8 @@ class ListaEnlazadaTests {
 
         lista.eliminar(1);
 
+        assertEquals(42, lista.obtener(0));        
         assertEquals(3, lista.longitud());
-        assertEquals(42, lista.obtener(0));
         assertEquals(44, lista.obtener(1));
         assertEquals(45, lista.obtener(2));
 
@@ -106,6 +106,7 @@ class ListaEnlazadaTests {
         assertEquals(44, lista.obtener(1));
 
         lista.eliminar(0);
+
         lista.eliminar(0);
 
         assertEquals(0, lista.longitud());

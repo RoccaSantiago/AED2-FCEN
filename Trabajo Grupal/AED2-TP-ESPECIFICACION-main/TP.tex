@@ -1,0 +1,1020 @@
+\documentclass[10pt,a4paper]{article}
+
+\input{AEDmacros}
+\usepackage{caratula} % Version modificada para usar las macros de algo1 de ~> https://github.com/bcardiff/dc-tex
+\usepackage{xcolor}
+
+\titulo{Trabajo pr\'actico 1: Especificac\'ion y WP}
+\subtitulo{Elecciones Nacionales}
+
+\fecha{\today}
+
+\materia{Algoritmos y Estructuras de Datos}
+\grupo{sudo\_rm-rf\_/*}
+
+\integrante{Rocca, Santiago}{152/23}{santiagorocca17@gmail.com}
+\integrante{Fisz, Maximiliano}{586/19}{maxifisz@gmail.com}   
+\integrante{Gomez, Abril}{574/20}{goskema@gmail.com}
+\integrante{L\'opez, Gonzalo}{1017/22}{gonzalo.esloga.uba@gmail.com}
+% Pongan cuantos integrantes quieran
+
+% Declaramos donde van a estar las figuras
+% No es obligatorio, pero suele ser comodo
+\graphicspath{{../static/}}
+
+\begin{document}
+
+\maketitle
+
+\section{Especificaci\'on}
+	
+
+    \subsection{General}
+
+
+	\subsubsection{Predicados Universales}
+		
+		\pred{noHayRepetidos}{\In escrutinio : \TLista{\ent}}{(\forall x: \ent)(0 \leq x < |escrutinio| \: \longrightarrow_{L} \: ((\forall y: \ent)(0 \leq y < |escrutinio| \: \land  \: \neg(x=y) \: \longrightarrow_{L }\neg(escrutinio[x] = escrutinio[y])))}
+		
+		\pred{cantVotosValidos}{\In escrutinio : \TLista{\ent}}{((\forall x: \ent)(0 \leq x < |escrutinio|) \: \longrightarrow_{L } (escrutinio[x] \geq 0))}
+	
+		\pred{escrutinioValido}{\In escrutinio: \TLista{\ent}}{|escrutinio| \geq 2}
+		
+		\pred{EleccionValida}{\In escrutinio: \TLista{\ent}}{nohayRepetidos(escrutinio) \land cantVotosValidos(escrutinio) \land escrutinioValido(escrutinio)}
+		
+		\pred{umbralElectoral}{\In escrutinioDip : \TLista{\ent}}{(\exists x: \ent)(0 \leq x < |escrutinioDip| \land_L porcentajeDeVotos(escrutinioDip, escrutinioDip[x]) > 3)} 
+
+            
+        \pred{minimoDePartidos}{\In escrutinio: \TLista{\ent}}{|escrutinio| \geq 3}
+
+
+    \subsubsection{Auxiliares}
+
+		\aux{sumaDeVotos}{\In escrutinio : \TLista{\ent}}{\ent}{\sum\limits_{i=0}^{|escrutinio| - 1} escrutinio[i]}
+
+		\aux{porcentajeDeVotos}{\In escrutinio: \TLista{\ent}, \In votospartido: \ent}{\float}{sumaDeVotos(escrutinio)^{-1} \; * \; votospartido \; * \; 10^{2}}
+
+        \aux{bancasGanadas}{\In dH: \TLista{\TLista{\ent}},\In max: \ent, \In r: \ent}{\ent}{\\ \sum_{j=0}^{dH[r]-1} if \; max>maxAnteriores(dH, dH[r][j]) \; then \; 1 \; else \; 0}
+
+        \aux{maxAnteriores}{\In dH: \TLista{\TLista{\ent}},\In max: \ent, \In r: \ent}{\ent}{\sum^{|dH|-1}_{j=0} \sum^{dH[j]-1}_{i=0} if \; dH[j][i]>r \; then \; 1 \; else \; 0}
+	
+
+
+\subsection{hayBallotage}
+		\subsubsection{Main}
+
+			\begin{proc}{hayBallotage}{\In escrutinio : \TLista{\ent}}{\bool}
+	
+				\requiere{eleccionValida(escrutinio))}
+	
+				\asegura{res = True \longleftrightarrow \neg((partidoMayorA45\%(escrutinio))\lor (partidoMayorA40\%ConDiferencia(escrutinio)))}
+
+			\end{proc}
+
+		\subsubsection{Predicados Espec\'ificos}
+
+			\pred{partidoMayorA45\%}{\In escrutinio : \TLista{\ent}}{(\exists n:\ent)(0 \leq n < |escrutinio| -1 \land_{ L }porcentajeDeVotos(escrutinio,escrutinio[n])>45) }
+
+
+			\pred{partidoMayorA40\%ConDiferencia}{\In escrutinio : \TLista{\ent}}{(\exists n:\ent)(0 \leq n < |escrutinio| -1 \land_{ L }porcentajeDeVotos(escrutinio,escrutinio[n])>40) \: \land_{ L } \\ \neg(\forall x:\ent)(0\leq x < |escrutinio|-1 \land  \neg(n=x) \longrightarrow_{ L } (escrutinio[n] - escrutinio[x])>10) }
+
+
+			
+
+
+\subsection{hayFraude}
+		\subsubsection{Main}
+			1
+			\begin{proc}{hayFraude}{\In escrutinio\_Presidente: \TLista{\ent}, \In Chat
+escrutinio\_Senadores: \TLista{\ent}, \In escrutinio\_Diputados: \TLista{\ent}}{\bool}
+				\requiere{eleccionValida(escrutinio\_Presidente) \: \land\: eleccionValida(escrutinio\_Senadores) \: \land \: \\ eleccionValida(escrutinio\_Diputados) \land minimoDePartidos(escrutinio\_Senadores) \land \\ 
+                \: umbralElectoral(escrutinio\_Diputados) \land 
+(|escrutinio\_Presidente| = |escrutinio\_Senadores| = |escrutinio\_Diputados|)}
+				
+				\asegura{res=True \longleftrightarrow \neg((sumaDeVotos(escrutinio\_Presidente) = sumaDeVotos(escrutinio\_Senadores)) \land \\ (sumaDeVotos(escrutinio\_Presidente) = sumaDeVotos(escrutinio\_Diputados)))}
+			\end{proc}
+
+
+
+
+
+
+		
+	\subsection{obtenerSenadoresEnProvincia}
+		\subsubsection{Main}
+			
+			\begin{proc}{obtenerSenadoresEnProvincia}{\In escrutinio : \TLista{\ent}}{\ent \texttimes \ent}
+
+                			\requiere{nohayRepetidos(escrutinio) \land cantVotosValidos(escrutinio) \land minimoDePartidos(escrutinio)}
+                			\asegura{0\leq res_1 , res_0 < |escrutinio| \land_L (\forall j : \ent)(0\leq j < |escrutinio| \land j\neq res_0 \land j \neq res_1\longrightarrow_L escrutinio[j]<escrutinio[res_1]<escrutinio[res_0])}
+
+            	\end{proc}
+		
+
+			
+	
+
+
+	 \subsection{calcularDHondtEnProvincia}
+		\subsubsection{Main}
+			\begin{proc}{calcularDHondtEnProvincia}{\In cant\_bancas: \ent, \In escrutinio: \TLista{\ent} } {\TLista{\TLista{\ent}}}
+				 
+				\requiere{eleccionValida(escrutinio) \land umbralElectoral(escrutinio) \land cant\_bancas>0)}
+				\asegura{((\forall \: i:\ent)(0\leq i < cant\_bancas) \land_{L} (\forall \: j:\ent)(0\leq j <|escrutinio|))\longrightarrow_{L } \\ (res[j][i]=\frac{escrutinio[j]}{i+1} \land \frac{escrutinio[j]}{i+1} \geq 0)}
+
+			\end{proc}
+
+
+
+	\subsection{obtenerDiputadosEnProvincia}
+		\subsubsection{Main}
+			\begin{proc}{obtenerDiputadosEnProvincia}{\In cant\_bancas: \ent, \In escrutinio: \TLista{\ent}, \In dHondt: \TLista{\TLista{\ent}}}{\TLista{\ent}}
+				 
+				\requiere{eleccionValida(escrutinio) \land umbralElectoral(escrutinio) \land coeficientesDistintos(dHondt) \\ \land esMatriz(dHondt) \land
+                matrizDelEscrutinio(dHondt, \: cant\_bancas, \: escrutinio) \land todosPositivos(dHondt))}				
+                    \asegura{(\forall \: r:\ent)(0\leq r < |escrutinio| - 1 \longrightarrow_{L} (((porcentajeDeVotos(escrutinio, escrutinio[r]) > 3) \land (res[r] = bancasGanadas(dHondt, cant\_bancas, r))) \lor ((porcentajeDeVotos(escrutinio, escrutinio[r]) \leq 3) \land res[r] = 0)) \; \land \; |res| = |dHondt|}
+    
+	        \end{proc}
+
+         \subsubsection{Predicados Espec\'ificos}
+
+        \pred{esMatriz}{\In dH: \TLista{\TLista{\ent}}}{True \longleftrightarrow 
+        (\forall i : \ent)(0 \leq i < |dH| - 1 \longrightarrow |dH[i]| = |dH[i+1]|) 
+        }
+
+        \pred{matrizDelEscrutinio}{\In dH: \TLista{\TLista{\ent}}, \In cant\_bancas: \ent, \In escrutinio: \TLista{\ent}}{True \longleftrightarrow 
+        ((\forall \: i:\ent)(0\leq i < cant\_bancas) \land_{L} (\forall \: j:\ent)(0\leq j <|escrutinio|))\longrightarrow_{L } dH[j][i]=\frac{escrutinio[j]}{i+1}) 
+        }
+    
+
+   
+   
+   \pred{coeficientesDistintos}{\In DHondt: \TLista{\TLista{\ent}}}{
+   (\forall j:\ent)(0\leq j < |DHondt| \longrightarrow_{L} ((\forall i:\ent)(0\leq i<|DHondt[j]|\longrightarrow_{L} \neg ((\exists z:\ent)(0\leq z <|DHondt| \land_{L} \\ ((\exists t:\ent)(0\leq t<|DHondt[z] \land_{L} DHondt[z][t] = DHondt[j][i] \land  ((z =  j \land t \neq i)\lor (z\neq j \land t=i)))))))))
+    }
+   \pred{todosPositivos}{\In DHondt : \TLista{\TLista{\ent}}}{(\forall j:\ent)(0\leq j <|DHondt|\longrightarrow_{L} ((\forall i:\ent)(0\leq i < |DHondt[j]|\longrightarrow_{L} DHondt[j][i]>0)))}
+   
+   
+   
+   
+
+
+
+
+
+
+	\subsection{validarListasDiputadosEnProvincia}
+		\subsubsection{Main}
+			
+			\begin{proc}{(\In cant\_bancas: \ent, \In listas: \TLista{\TLista{dni:\ent \times genero: \ent}}}{\bool}
+			
+				\requiere{(cant\_bancas>0) \: \land (\forall \: x:\ent)
+    (0\leq x < |listas| \longrightarrow_{L} listas[x]_{0} > 0 \: \land \: 1 \leq listas[x]_{1} \leq 2)}
+				\asegura{(\forall \: \: partido:\ent)(0\leq partido<|listas|) \longrightarrow_{L} (cantCandidatosCorrecta(cant\_bancas,\: listas[partido])\land altGenero(listas[partido])}			
+
+			\end{proc}
+
+         \subsubsection{Predicados Espec\'ificos}
+		
+			\pred{cantCandidatosCorrecta}{cant\_bancas: \ent, partido: \TLista{dni:\ent \times genero: \ent}}{cant\_bancas=|partido|}
+
+			\pred{altGenero}{partido: \TLista{dni:\ent \times genero: \ent}}{((\forall n: \ent)(0 \leq n < |partido|\longrightarrow_{L} ( ((n\mod2=0)\longrightarrow_{L} (partido[n]_1=1)) \land_{L } ((n\mod2=1)\longrightarrow_{L} (partido[n]_1=2)) \lor_{L} ((n \mod 2 = 0) \longrightarrow_{L} (partido[n]_1=2) \land_{L} (n \mod 2=1) \longrightarrow_{L} (partido[n]_1=1)))))}
+	
+
+
+
+
+
+	
+
+
+\section{Implementaciones y demostraciones de correctitud}
+
+	\subsection{Implementaciones}
+		
+		\subsubsection{hayBallotage}
+		% Para hacer que quede todo en una misma linea, se puede usar minipage
+			\begin{minipage}[t]{\textwidth}
+				\begin{lstlisting}[label=code:for]
+					res := true
+					primero := 0
+					segundo := 1
+					i := 0
+					suma := 0
+					while (escrutinio.size() > i) do
+						suma:= suma + escrutinio[i]
+						i := i + 1
+					endwhile
+					i := 0
+					while (escrutinio.size() > i) do
+						escrutinio[i] := (escrutinio[i] * 100)/suma
+						i := i + 1
+					endwhile
+                    i:=2
+                    if (escrutinio[primero]<escrutinio[segundo])
+                        segundo = 0;
+                        primero = 1;
+                    else
+                        skip
+                    endif
+                    while(i<|escrutinio|) do 
+                        if (escrutinio[i]>escrutinio[primero]) 
+                            segundo:= primero
+                            primero:= i 
+                        else 
+                            if (escrutinio[i]>escrutinio[segundo])
+                                segundo := i
+                            else
+                                skip
+                            endif
+                        endif 
+                        i:=i+1 
+                    endwhile 
+					if (primero > 45)
+						res := false
+					else
+						if ((primero > 40) && (primero - segundo >= 10))
+							res := false
+						else
+							skip
+						endif
+					endif
+
+				\end{lstlisting}
+			\end{minipage}
+
+		\subsubsection{hayFraude}
+			\begin{minipage}[t]{\textwidth}
+				\begin{lstlisting}[label=code:for]Chat
+                    res := false
+					i := 0
+					SumaSen := 0
+					sumaDip := 0
+					sumaPres := 0
+					while (escrutinio_Presidente.size() > i) do
+						sumaPres := sumaPres + escrutinio_Presidente[i]
+						sumaDip := sumaDip + escrutinio_Diputados[i]
+						sumaSen := sumaSen + escrutinio_Senadoresl[i]
+						i := i + 1
+					endwhile
+					if (sumaPres = sumaDip && sumaPres = sumaSen) then 
+						skip
+					else:
+						res := true
+					endif
+				\end{lstlisting}
+			\end{minipage}
+
+		\subsubsection{obtenerSenadoresEnProvincia}
+			\begin{minipage}[t]{\textwidth}
+				\begin{lstlisting}[label=code:for]
+		            primero:=0
+                    i:=0     
+                    while(i<|escrutinio|) do 
+                        if (escrutinio[i]>escrutinio[primero]) 
+                            primero:= i 
+                        else:
+                            skip
+                        endif
+                    endwhile
+                    segundo:=0
+                    if (primero==0)
+                        segundo = 1;
+                    else
+                        skip
+                    endif
+                    i:=0
+                    while (i<|escrutinio|)
+                        if (escrutinio[i]>escrutinio[segundo] && i!=primero)
+                            segundo := i
+                        else
+                            skip
+                        endif
+                        i:=i+1                     
+                    endwhile
+                    i:=i+1 
+                    res=(primero,segundo) 
+				\end{lstlisting}
+			\end{minipage}
+	
+		\subsubsection{validarListasDiputadosEnProvincia}
+			\begin{minipage}[t]{\textwidth}
+				\begin{lstlisting}[label=code:for]
+					res := true
+					i := 0
+					while (listas.size() > i) do
+						if (listas[i].size() != cant_bancas) 
+							res:= false1
+						else:
+							skip
+						endif
+						i := i + 1
+					endwhile
+					i := 0
+					while (listas.size() > i) do
+                        j := 1
+						genero := listas[i][0][1]
+						while (listas[i].size() > j) do
+							if (listas[i][j][1] == genero) 
+								res:=false
+							else:
+								genero := listas[i][j][1]
+								j := j + 1
+							endif
+					    endwhile
+						i := i + 1
+					endwhile
+				\end{lstlisting}
+			\end{minipage}
+		
+	\subsection{Demostraciones de correctitud}
+\subsubsection{hayFraude}
+\begin{itemize}
+        \item e1 : escrutinioPresidente, \: e2 : escrutinioSenadores, \: e3 : escrutinioDiputados
+        \item $P_c : res=False \land i=0 \land sumaPres=0 \land sumaDip=0 \land sumaSen=0$
+        
+	\item $Q_c : \sum\limits_{i=0}^{|e1| - 1} e1[i] = sumaPres \land \sum\limits_{i=0}^{|e2| - 1} e2[i] = sumaSen \land \sum\limits_{i=0}^{|e3| - 1} e3[i] = sumaDip \land \\ 
+ (res = False \longleftrightarrow sumaPres = SumaDip \land sumaPres = sumaSen)$
+	\item $B : |e1| > i$
+	\item $F_v : |e1| - i$
+        \item $Post : res = \neg{(sumaDeVotos(e1) = sumaDeVotos(e3) \land sumaDeVotos(e1) = sumaDeVotos(e2))}$
+	\item $I : 0 \leq i \leq |e1| \land_{L} (\sum\limits_{j=0}^{i - 1} e1[j] = sumaPres \land \sum\limits_{j=0}^{i - 1} e2[j] = sumaSen \land \sum\limits_{j=0}^{i - 1} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen \longleftrightarrow res = False)$
+    
+\end{itemize}
+\vspace{6mm} 
+\begin{enumerate}
+    \item  Pre $\longrightarrow_{L}$ wp(sumaPres := 0; sumaDip := 0; sumaSen := 0; i := 0; res := False, Pc)
+    \vspace{3mm} 
+
+    $wp(sumaDip := 0, \: wp(sumaDip := 0, \: wp(sumaSen := 0, \: wp(i := 0, \: wp(res := False, \: P_c))))$
+
+    \quad $wp(res := False, P_c) \equiv def(False) \land_L  Pc^{res}_{False} \equiv$
+
+    \quad\quad $\equiv True \land_L (False = False \land i = 0 \land sumaPres = 0 \land sumaDip = 0 \land sumaSen = 0)$
+
+    \quad\quad $\equiv i = 0 \land sumaPres = 0 \land sumaDip = 0 \land sumaSen = 0 \equiv p0$
+    
+    \quad $wp(i := 0, p0) \equiv def(0) \land_L  p0^i_0 \equiv$ 
+    
+    \quad\quad $\equiv True \land_L 0 = 0 \land sumaPres = 0 \land sumaDip = 0 \land sumaSen = 0 $
+
+    \quad\quad $\equiv sumaPres = 0 \land sumaDip = 0 \land sumaSen = 0 \equiv p1$
+
+    \quad $wp(sumaSen := 0, \: p1) \equiv def(0) \land_L p1^{sumaSen}_0$
+
+    \quad\quad $\equiv True \land_L sumaPres = 0 \land sumaDip = 0 \land 0 = 0$
+
+    \quad\quad $ \equiv sumaPres = 0 \land sumaDip = 0 \equiv p2$
+
+    \quad $wp(sumaDip := 0, \: p2) \equiv def(0) \land_L p2^{sumaDip}_0$
+
+    \quad\quad $\equiv True \land_L sumaPres = 0 \land 0 = 0$
+
+    \quad\quad $\equiv sumaPres = 0 \equiv p3$
+
+    \quad $wp(sumaPres := 0, p3) \equiv def(0) \land_L p3^{sumaPres}_0 $
+
+    \quad\quad $\equiv True \land_L 0 = 0$  
+
+    \quad\quad$ \equiv True $ 
+
+\vspace{3mm} 
+{Pre $\longrightarrow_{L}$ wp(sumaPres := 0; sumaDip := 0; sumaSen := 0; i :=0; res := False, Pc) \\ es verdadero porque Pre siempre implica a True }
+\vspace{5mm} 
+
+\item $Q_c \longrightarrow_{L} \text{wp}(\text{If}(\ldots), \: Post)$ 
+\vspace{3mm}
+
+\quad $wp(\text{If}(\dots), Post) \equiv$
+
+\quad\quad $B : sumaPres = sumaDip \land sumaPres = sumaSen$
+
+\quad\quad $\equiv def(B) \land_L ((B \land \textcolor{red}{wp}(Skip, \: Post) \lor (\neg B \land \textcolor{blue}{wp}(res := True , \: Post))))$
+
+\quad\quad $\equiv True \land_L ((B \land \textcolor{red}{wp}(Skip, \: Post) \lor (\neg B \land \textcolor{blue}{wp}(res := True, \: Post))))$
+
+\quad\quad\quad $\textcolor{red}{wp}(Skip, \: Post) \equiv Post$
+
+\quad\quad\quad $\textcolor{blue}{wp}(res := True, \: Post) \equiv$
+
+\quad\quad\quad\quad $\equiv def(True) \land_v Post^{res}_{True}$
+
+\quad\quad\quad\quad $\equiv True \land_v Post^{res}_{True}$
+
+\quad\quad\quad\quad $\equiv True = \neg{(sumaDeVotos(e1) = sumaDeVotos(e3) \: \land sumaDeVotos(e1) = sumaDeVotos(e2))}$
+
+\quad\quad\quad\quad $\textcolor{blue}{\equiv} \: True = \neg(\sum\limits_{i=0}^{|e1| - 1} e1[i] = \sum\limits_{i=0}^{|e3| - 1} e3[i] \: \land
+ \sum\limits_{i=0}^{|e1| - 1} e1[i] = \sum\limits_{i=0}^{|e2| - 1} e2[i]) \equiv \textcolor{purple}{C}$ 
+
+\quad\quad $\equiv True \land_L ((B \land Post) \lor (\neg B \land \textcolor{blue}{wp}(res := True, \: Post))) \equiv 
+((B \land Post) \lor (\neg{B} \land \textcolor{purple}{C})) \equiv$
+
+\quad\quad $\equiv ((sumaPres = sumaDip \land sumaPres = sumaSen \land Post) \: \lor$ 
+
+\quad\quad\quad $(\neg{(sumaPres = sumaDip \land sumaPres = sumaSen) \land \textcolor{purple}{C}}))$
+
+\vspace{1mm} 
+
+\quad $ wp(\text{If}(\dots), Post) \equiv ((sumaPres = sumaDip \land sumaPres = sumaSen \land Post) \: \lor$ 
+
+\quad\quad $(\neg{(sumaPres = sumaDip \land sumaPres = sumaSen) \land \textcolor{purple}{C}}))$
+
+\vspace{3mm} 
+
+Recordatorio de $Q_C$ : $\sum\limits_{i=0}^{|e1| - 1} e1[i] = sumaPres \land \sum\limits_{i=0}^{|e2| - 1} e2[i] = sumaSen \land \sum\limits_{i=0}^{|e3| - 1} e3[i] = sumaDip \land \\ 
+ (res = False \longleftrightarrow sumaPres = SumaDip \land sumaPres = sumaSen)$.
+
+\vspace{1mm} 
+
+Veamos si $Q_c \longrightarrow_{L} \text{wp}(\text{If}(\ldots), \: Post)$ por partes. Asumimos $Q_c $ verdadero. \\
+Vemos que nos basta con probar una de las ramas del wp, que se separa en dos casos: cuando se cumple B o $\neg{B}$. \\
+Sabemos que $(res = False \longleftrightarrow sumaPres = SumaDip \land sumaPres = sumaSen)$, entonces \\ sumaPres = SumaDip, sumaPres = sumaSen y res = False. \\ Si probamos $Q_C \longrightarrow_{L} Post$, queda probada la implicación porque es verdadera la rama B del wp. \\
+Sabemos que Post $\equiv res = \neg(\sum\limits_{i=0}^{|e1| - 1} e1[i] = \sum\limits_{i=0}^{|e3| - 1} e3[i] \: \land
+ \sum\limits_{i=0}^{|e1| - 1} e1[i] = \sum\limits_{i=0}^{|e2| - 1} e2[i])$.
+
+ 
+Las sumatorias, sabemos por $Q_c$, que son iguales a la variable con el resultado de la suma, \\
+por ejemplo: $\sum\limits_{i=0}^{|e1| - 1} e1[i]$ = sumaPres y que sumaPres = sumaDip y sumaPres = sumaSen. \\
+Adem\'as, sabemos que res = False. Entonces: \\ 
+
+\begin{center}
+    $Post \equiv
+res = \neg(\sum\limits_{i=0}^{|e1| - 1} e1[i] = \sum\limits_{i=0}^{|e3| - 1} e3[i] \: \land \sum\limits_{i=0}^{|e1| - 1} e1[i] = \sum\limits_{i=0}^{|e2| - 1} e2[i])
+$
+    $Post \equiv False = \neg{(sumaPres = sumaDip \land sumaPres = sumaSen)}$
+    
+    $Post \equiv False = \neg{(True \land True)}$
+
+    $Post \equiv False = False$
+
+    $Post \equiv True$
+
+\end{center}
+
+Entonces $Q_c \longrightarrow_{L} \text{wp}(\text{If}(\ldots), \: Post)$
+\item $P_c \longrightarrow_{L}$ wp(\text{While}(\ldots), Qc) mediante el teorema del invariante.
+
+e1 : escrutinioPresidente, \: e2 : escrutinioSenadores, \: e3 : escrutinioDiputados
+
+\begin{enumerate}
+    \item $P_c \longrightarrow I$ \\
+    $P_c : res=False \land i=0 \land sumaPres=0 \land sumaDip=0 \land sumaSen=0$ \\
+    $I : 0 \leq i \leq |e1| \land (\sum\limits_{j=0}^{i - 1} e1[j] = sumaPres \land \sum\limits_{j=0}^{i - 1} e2[j] = sumaSen \land \sum\limits_{j=0}^{i - 1} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen \longleftrightarrow res = False) 
+    $
+    \begin{itemize}
+        \item Como i = 0, se cumple que 0 $\leq$ i $\leq |e1|$
+        \item Como i = 0, las sumatorias suman 0 (suma desde un limite a otro menor) y tenemos:
+        \begin{center}
+            0 = sumaPres $\land$ 0 = sumaSen $\land$ 0 = sumaDip 
+        \end{center}
+        \item Como las tres variables, sumaPres, sumaDip y sumaSen son iguales a 0, sumaPres = sumaDip y sumaPres = sumaSen. Res tambien es False, por lo que es verdadera la ultima condicion del invariante.
+    \end{itemize}
+    Entonces $P_c \longrightarrow I$.
+    
+    
+    \item $I \land \neg{B} \longrightarrow Q_c$ \\
+    
+    $I : 0 \leq i \leq |e1| \land (\sum\limits_{j=0}^{i - 1} e1[j] = sumaPres \land \sum\limits_{j=0}^{i - 1} e2[j] = sumaSen \land
+    \sum\limits_{j=0}^{i - 1} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen \longleftrightarrow res = False)$ \\
+    
+    $\neg{B} : \neg{(|e1| > i)} \equiv |e1| \leq i $ \\
+    $Q_c :  \sum\limits_{i=0}^{|e1| - 1} e1[i] = sumaPres \land \sum\limits_{i=0}^{|e2| - 1} e2[i] = sumaSen \land \sum\limits_{i=0}^{|e3| - 1} e3[i] = sumaDip \land \\ 
+ (res = False \longleftrightarrow sumaPres = SumaDip \land sumaPres = sumaSen)$
+ \begin{itemize}
+     \item Como $i$ $\leq |e1|$ y tambien $|e1| \leq i$, entonces $i$ = $|e1|$. Al reemplazar $i$ por $|e1|$ en las sumatorias de I, se cumplen las igualdades de las sumatorias de $Q_c$.
+     \item Del I, tenemos inmediatamente la implicacion de la doble igualdad de $Q_c$.
+ \end{itemize}
+ Entonces $I \land \neg{B} \longrightarrow Q_c$
+    
+\item $I \land fv \leq 0 \longrightarrow \neg{B}$ \\
+$I : 0 \leq i \leq |e1| \land (\sum\limits_{j=0}^{i - 1} e1[j] = sumaPres \land \sum\limits_{j=0}^{i - 1} e2[j] = sumaSen \land \sum\limits_{j=0}^{i - 1} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen \longleftrightarrow res = False)$ \\
+    
+$fv \leq 0 : |e1| - i  \leq 0$ \\
+$\neg{B} : |e1| \leq i$
+\begin{itemize}
+    \item De fv $\leq 0: |e1| - i \leq 0 \equiv |e1| \leq i,$ 
+    Que es exactamente $\neg{B}$
+\end{itemize}
+
+Entonces $I \land fv \leq 0 \longrightarrow \neg{B}$
+
+\item $I \land B \longrightarrow wp(sumaPres := sumaPres + e1[i](\ldots);\: i \: := \: i + 1, \: I)$\\
+$I : 0 \leq i \leq |e1| \land (\sum\limits_{j=0}^{i - 1} e1[j] = sumaPres \land \sum\limits_{j=0}^{i - 1} e2[j] = sumaSen \land \sum\limits_{j=0}^{i - 1} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen \longleftrightarrow res = False)$ \\
+$B : |e1| > i$ \\
+$wp(sumaPres := sumaPres + e1[i](\ldots);\: i \: := \: i + 1, \: I) \equiv$ 
+
+\quad\quad \textcolor{cyan}{wp}(sumaPres := sumaPres + e1[i], \textcolor{blue}{wp}(sumaDip := sumaDip + e3[i],
+
+\quad\quad \textcolor{green}{wp}(sumaSen := sumaSen + e2[i], \textcolor{red}{wp}(i := i + 1, I))))
+
+\quad\quad\quad \textcolor{red}{wp}(i := i + 1, I) $\equiv def(i+1) \: \land_{L} I^i_{i+1} \equiv$
+
+\quad\quad\quad $\equiv True \: \land_{L} I^i_{i+1}$
+
+\quad\quad\quad $\equiv 0 \leq i + 1 \leq |e1| \land (\sum\limits_{j=0}^{i} e1[j] = sumaPres \land \sum\limits_{j=0}^{i} e2[j] = sumaSen \land \sum\limits_{j=0}^{i} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen \longleftrightarrow res = False) \equiv \textcolor{red}{wp1} $\\
+
+\quad\quad\quad \textcolor{green}{wp}(sumaSen := sumaSen + e2[i], \textcolor{red}{wp1}) $\equiv def(sumaSen +e2[i]) \land_{L} \textcolor{red}{wp1}^{sumaSen}_{sumaSen + e2[i]}$
+
+\quad\quad\quad $\equiv True \: \land_{L} \textcolor{red}{wp1}^{sumaSen}_{sumaSen + e2[i]}$
+
+\quad\quad\quad $\equiv 0 \leq i + 1 \leq |e1| \land (\sum\limits_{j=0}^{i} e1[j] = sumaPres \land \sum\limits_{j=0}^{i} e2[j] = sumaSen + e2[i] \land \sum\limits_{j=0}^{i} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen + e2[i] \longleftrightarrow res = False) \equiv \textcolor{green}{wp2} $
+
+\quad\quad\quad \textcolor{blue}{wp}(sumaDip := sumaDip + e3[i], \textcolor{green}{wp2}) $\equiv def(sumaDip +e3[i]) \land_{L} \textcolor{green}{wp2}^{sumaDip}_{sumaDip + e3[i]}$
+
+\quad\quad\quad $\equiv True \: \land_{L} \textcolor{green}{wp2}^{sumaDip}_{sumaDip + e3[i]}$
+
+\quad\quad\quad $\equiv 0 \leq i + 1 \leq |e1| \land (\sum\limits_{j=0}^{i} e1[j] = sumaPres \land \sum\limits_{j=0}^{i} e2[j] = sumaSen + e2[i] \land \sum\limits_{j=0}^{i} e3[j] = sumaDip + e3[i]) \land \\
+    (sumaPres = sumaDip + e3[i]  \land sumaPres = sumaSen + e2[i] \longleftrightarrow res = False) \equiv \textcolor{blue}{wp3}$
+
+\quad\quad\quad \textcolor{cyan}{wp}(sumaPres := sumaPres + e1[i], \textcolor{blue}{wp3}) $\equiv def(sumaDip +e3[i]) \land_{L} \textcolor{blue}{wp3}^{sumaPres}_{sumaPres + e1[i]}$
+
+\quad\quad\quad $\equiv True \: \land_{L} \textcolor{blue}{wp3}^{sumaPres}_{sumaPres + e1[i]}$
+
+\quad\quad\quad $\equiv 0 \leq i + 1 \leq |e1| \land (\sum\limits_{j=0}^{i} e1[j] = sumaPres + e1[i] \land \sum\limits_{j=0}^{i} e2[j] = sumaSen + e2[i] \land \sum\limits_{j=0}^{i} e3[j] = sumaDip + e3[i]) \land \\
+    (sumaPres + e1[i] = sumaDip + e3[i]  \land sumaPres + e1[i] = sumaSen + e2[i] \longleftrightarrow res = False) \equiv \textcolor{cyan}{wp4}$ \\
+
+
+Veamos si I $\land \: B \longrightarrow$ \textcolor{cyan}{wp4}
+\begin{itemize}
+    \item De 0 $\leq i \leq |e1|$ y $|e1| > i$ tenemos que $0 \leq i < |e1|$ que implica a $0 \leq i + 1 \leq |e1|$ para todos los valores de i.
+    \item Del I, tenemos res = False, por lo que es verdadero tambi\'en (sumaPres + e1[i] = sumaDip + e3[i]  $\land$ sumaPres + e1[i] = sumaSen + e2[i] $\longleftrightarrow$ res = False)
+    \item Para probar que las 3 sumatorias son iguales a su respectiva variable más el termino actual del escrutinio correspondiente en i, nos basta con probarla de forma general o probar 1, ya que las otras dos son an\'alogas.
+    \begin{center}
+        $\sum\limits_{j=0}^{i} e1[j] = sumaPres + e1[i]$
+        $\sum\limits_{j=0}^{i} e1[j] = sumaPres + e1[i] \equiv e1[0] + e1[1] + ... + e1[i-1] + e1[i] = sumaPres + e1[i] $ \\
+        Restamos el termino e1[i] de ambos lados y nos queda: \\
+        
+        $e1[0] + e1[1] + ... + e1[i-1] = sumaPres$\\
+
+        Del I, sabemos que $\sum\limits_{j=0}^{i - 1} e1[j] = sumaPres$, que podemos descomponer y ver que vale: \\
+        $e1[0] + e1[1] + ... + e1[i-1] = sumaPres$ \\
+        ¡Son id\'enticos! Así que el I me prueba las tres sumatorias del wp.
+    \end{center}
+\end{itemize}
+Entonces $I \land B \longrightarrow wp(sumaPres := sumaPres + e1[i](\ldots);\: i \: := \: i + 1, \: I)$
+
+\item $I \land B \land v_0 = |e1| - i \longrightarrow wp(sumaPres := sumaPres + e1[i](\ldots);\: i \: := \: i + 1, \: |s| - i < v_0)$\\
+$I : 0 \leq i \leq |e1| \land (\sum\limits_{j=0}^{i - 1} e1[j] = sumaPres \land \sum\limits_{j=0}^{i - 1} e2[j] = sumaSen \land \sum\limits_{j=0}^{i - 1} e3[j] = sumaDip) \land \\
+    (sumaPres = sumaDip  \land sumaPres = sumaSen \longleftrightarrow res = False)$ \\
+$B : |e1| > i$ \\
+$v_0 = |e1| - i$ \\
+$wp(sumaPres := sumaPres + e1[i](\ldots);\: i \: := \: i + 1, \: |e1| - i < v_0) \equiv$
+
+\quad\quad \textcolor{cyan}{wp}(sumaPres := sumaPres + e1[i], \textcolor{blue}{wp}(sumaDip := sumaDip + e3[i],
+
+\quad\quad \textcolor{green}{wp}(sumaSen := sumaSen + e2[i], \textcolor{red}{wp}(i := i + 1, $|e1| - i < v_0$))))
+
+\quad\quad\quad \textcolor{red}{wp}(i := i + 1, $|e1| - i < v_0$) $\equiv def(i+1) \: \land_{L} (|e1| - i < v_0)^i_{i+1} \equiv$
+
+\quad\quad\quad $\equiv True \land (|e1| - i < v_0)^i_{i+1}$
+
+\quad\quad\quad $\equiv |e1| - (i+1) < v_0$
+
+\quad\quad\quad $\equiv |e1| - i - 1 < v_0 \equiv \textcolor{red}{wp1}$
+
+\quad\quad\quad \textcolor{green}{wp}(sumaSen := sumaSen + e2[i], $\textcolor{red}{wp1}$) $\equiv def(sumaSen + e2[i]) \: \land_{L} \textcolor{red}{wp1}^{sumaSen}_{sumaSen + e2[i]} \equiv$
+
+\quad\quad\quad $\equiv True \land_L \textcolor{red}{wp1}^{sumaSen}_{sumaSen + e2[i]}$
+
+\quad\quad\quad $\equiv |e1| - i - 1 < v_0 \equiv \textcolor{green}{wp2}$
+
+\quad\quad\quad \textcolor{blue}{wp}(sumaDip := sumaDip + e3[i], $\textcolor{green}{wp2}$) $\equiv def(sumaDip + e3[i]) \: \land_{L} \textcolor{green}{wp2}^{sumaDip}_{sumaDip + e3[i]} \equiv$
+
+\quad\quad\quad $\equiv True \land_L \textcolor{green}{wp2}^{sumaDip}_{sumaDip + e3[i]}$
+
+\quad\quad\quad $\equiv |e1| - i - 1 < v_0 \equiv \textcolor{blue}{wp3}$
+
+\quad\quad\quad \textcolor{cyan}{wp}(sumaPres := sumaPres + e1[i], $\textcolor{blue}{wp3}$) $\equiv def(sumaPres + e1[i]) \: \land_{L} \textcolor{blue}{wp3}^{sumaPres}_{sumaPres + e1[i]} \equiv$
+
+\quad\quad\quad $\equiv True \land_L \textcolor{blue}{wp3}^{sumaPres}_{sumaPres + e1[i]}$
+
+\quad\quad\quad $\equiv |e1| - i - 1 < v_0 \equiv \textcolor{cyan}{wp4}$
+
+Veamos si I $\land \: B \land v_0 = |e1| - i \longrightarrow \textcolor{cyan}{wp4}$
+\begin{itemize}
+    \item Queremos probar que $|e1| - i - 1 < v_0$. Sabemos que $v_0 = |e1| - i$. Esta igualdad nos dice que $v_0 = |e1| - i$ y por lo tanto mayor a todas las expresiones menores a $|e1| - i$, como por ejemplo $|e1| - i - 1$, que justamente es la expresi\'on de $\textcolor{cyan}{wp4}$.
+\end{itemize}
+Entonces $I \land B \land v_0 = |e1| - i \longrightarrow wp(sumaPres := sumaPres + e1[i](\ldots);\: i \: := \: i + 1, \: |s| - i < v_0)$
+\end{enumerate}
+\end{enumerate}
+Como probamos:
+\begin{itemize}
+    \item Pre $\longrightarrow$ wp(codigo previo al ciclo, $P_c$)
+    \item $P_c$ $\longrightarrow$ wp(ciclo(por teorema del invariante), $Q_c$)
+    \item $Q_c$ $\longrightarrow$ wp(codigo posterior al ciclo, Post)
+\end{itemize}
+Al probar estas tres cosas, por corolario de monotonía sabemos que Pre $\longrightarrow$ wp(programa completo, Post)
+y, por lo tanto, el programa es correcto con respecto a la especificación.
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%ARREGLAR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{obtenerSenadoresProvincia}
+\text{Calculamos el WP del c\'odigo con respecto a su post. Para simplificar la operaci\'on}\\ \text{
+llamaremos a ``Escrutinio'' como ``S'', ``primero'' como `` 1` '' y ``segundo'' como `` 2` ''.} \\
+\text{Poseemos 6 operaciones elementales dentro del monoton\'ia, luego por regla de cadena de Wp}\\
+\text{(Wp(s1;s2;...;$s_n$,Q) = Wp(s1,Wp(s2,Wp(...,wp($s_n$,Q))))).}\\
+\text{Empezaremos desde la \'ultima linea de c\'odigo hasta la primera, tomando como poscondici\'on el Wp de la linea posterior a la}
+\text{linea a evaluar.}
+
+
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%ARREGLAR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+$\\$
+$Wp(res:=(1`,2`),Pos) \equiv def(1`,2`) \land_L Pos_{(1`,2`)}^{res} \\ \equiv 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < |S| \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`] \equiv \textcolor{red}{A}$
+
+$\text{Al obtener $\textcolor{red}{A}$, necesitamos calcular el Wp de un ciclo por lo que tenemos que usar el Teorema del invariante.}$
+\begin{itemize}
+
+
+
+
+    \item $I \equiv 0\leq i\leq |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]$
+    \item $Q_{c_2} \equiv \textcolor{red}{A}$
+    \item $P_{c_2} \equiv (2`=0 \lor 2`=1) \land 0\leq 1` <|S| \land 1`\neq 2`\land i=0 \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`])$ 
+    \item $B \equiv i<|S|$
+    \item $f_v = |S|-i$
+
+
+
+
+    
+\end{itemize}
+\begin{enumerate}
+    \item $\underline{P_c\longrightarrow I}$\\
+        $(2`=0 \lor 2`=1) \land 0\leq 1` <|S| \land 1`\neq 2`\land i=0 \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) \longrightarrow (0\leq i\leq |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1 \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`])$ 
+        \begin{itemize}
+            \item \underline{\text{Caso 2'=0}}\\
+            $(2`=0 \land 0\leq 1` <|S| \land 1`\neq 2`\land i=0 \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) \longrightarrow (0\leq i\leq |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1 \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`])$ \\
+
+            \text{Asumo como verdadero el $P_c$ y reemplazo en el invariante.}\\
+
+            $0\leq 0< |S| \land_L 0\leq 0 < |S| \land True \land (\forall j : \ent)(0\leq j < 0 \land j\neq 1 \land j \neq 0 \longrightarrow_L S[j]<S[0]<S[1`]) \equiv$ \\
+
+            $True \land_L True \land True \land (\forall j : \ent)(False \land j\neq 1 \land j \neq 0 \longrightarrow_L S[j]<S[0]<S[1`]) \equiv$ \\
+
+            $(\forall j : \ent)(False \longrightarrow_L S[j]<S[0]<S[1`]) \equiv True$\\
+
+            \text{Vale para este caso.}\\
+
+
+            \item \underline{\text{Caso 2'=1}}\\
+            $(2`=1 \land 0\leq 1` <|S| \land 1`\neq 2`\land i=0 \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) \longrightarrow (0\leq i\leq |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1 \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`])$ \\
+
+            \text{Asumo como verdadero el $P_c$ y reemplazo en el invariante.}\\
+
+            $0\leq 0< |S| \land_L 0\leq 1 < |S| \land True \land (\forall j : \ent)(0\leq j < 0 \land j\neq 1 \land j \neq 1 \longrightarrow_L S[j]<S[1]<S[1`]) \equiv$ \\
+
+            $True \land_L True \land True \land (\forall j : \ent)(False \land j\neq 1 \land j \neq 1 \longrightarrow_L S[j]<S[1]<S[1`]) \equiv$ \\
+
+            $(\forall j : \ent)(False \longrightarrow_L S[j]<S[1]<S[1`]) \equiv True$\\
+            \text{Vale para este caso}\\
+
+        \end{itemize}
+        \text{Como vale para ambos casos, entonces vale que $P_c \longrightarrow I$}
+        
+        
+    \item  $\underline{I\land \neg B \longrightarrow Q_c }$\\
+        $I \land i\geq |S| \equiv 0\leq i\leq |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \land i\geq |S| \equiv$\\
+        $ i= |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < |S| \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`] \equiv Q_c$
+
+        \text{Luego obtenemos que:}\\
+        $Q_c \longrightarrow Q_c \equiv True$
+
+        \text{Luego vale que $ I\land \neg B \longrightarrow Q_c$}
+        
+    
+    \item $\underline{\{ I \land B \}P \{ I \}}$\\
+    
+        \text{Para esta prueba queremos ver que $I \land B \longrightarrow Wp(P,I)$ siendo P el codigo dentro del primer ciclo.}
+        {Primero calculamos el wp:}\\
+        
+        $Wp(P,I)\equiv Wp(if (S[2`]<S[i] \land i\neq 1`) then (2`:=i) else (Skip), Wp(i:=i+1,I))$\\
+
+        \text{Lo calculamos por partes para simplificar:}\\
+        
+        $Wp(i:=i+1,I)\equiv def(i+1) \land_L I^{i}_{i+1} \equiv$\\
+        
+        $ 0\leq i+1\leq |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`] \equiv$\\
+        
+        $ -1\leq i< |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`] \equiv \textcolor{red}{A}$\\
+
+        \text{Luego resta calcular el $Wp(if (S[2`]<S[i] \land i\neq 1`) then (2`:=i) else (Skip), Wp(i:=i+1,I), \textcolor{red}{A})$} \\
+
+        $Wp(if (S[2`]<S[i] \land i\neq 1`) then (2`:=i) else (Skip), Wp(i:=i+1,I), \textcolor{red}{A})\equiv$\\
+        $def(S[2`]<S[i]) \land def(i\neq1`)\land_L ((S[2`]<S[i] \land i \neq 1` \land Wp(2`:=i, \textcolor{red}{A})) \lor (S[2`]\geq S[i] \lor i=1` \land Wp(Skip, \textcolor{red}{A})))\equiv$\\
+        
+        $0\leq 2`,i<|S| \land_L((S[2`]<S[i] \land i \neq 1` \land def(i)\land_L \textcolor{red}{A}^{2`}_i)\lor (S[2`]\geq S[i] \lor i=1` \land \textcolor{red}{A}))\equiv$\\
+        
+        $0\leq 2`,i<|S| \land_L((S[2`]<S[i] \land i \neq 1` \land (-1\leq i< |S| \land_L 0\leq i , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq i\longrightarrow_L S[j]<S[i]<S[1`])))\lor (S[2`]\geq S[i] \lor i=1` \land \textcolor{red}{A}))\equiv $\\
+
+        $0\leq 2`,i<|S| \land_L(((S[2`]<S[i] \land i \neq 1`) \land ( 0\leq i , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq i\longrightarrow_L S[j]<S[i]<S[1`])))\lor ((S[2`]\geq S[i] \lor i=1`) \land  0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]))\equiv$\\
+
+        $0\leq 2`,i,1`<|S| \land_L(((S[2`]<S[i] \land i \neq 1`) \land  (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq i\longrightarrow_L S[j]<S[i]<S[1`])))\lor ((S[2`]\geq S[i] \lor i=1`)  \land (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`])) \equiv$ \\
+
+        $0\leq 2`,i,1`<|S| \land_L(((S[2`]<S[i] \land i \neq 1`) \land  (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq i\longrightarrow_L S[j]<S[i]<S[1`])))\lor ((S[2`]\geq S[i] \land (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) ) \lor (i=1` \land (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`])))$ \\
+
+        $\textcolor{brown}{indices} \land_L (\textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor (i=1` \land (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]))) \equiv$ \\
+
+        $\textcolor{brown}{indices} \land_L (\textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor \textcolor{red}{D})$\\
+
+        $\textcolor{red}{D} \equiv i=1` \land (\forall j : \ent)(0\leq j < i+1 \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \equiv$\\
+
+        $i=1` \land (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \land (i\neq 1` \land i \neq 2` \longrightarrow_L S[i]<S[2`]<S[1`]) \equiv$ \\ 
+
+        $(\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \land (1`\neq 1` \land i \neq 2` \longrightarrow_L S[1`]<S[2`]<S[1`]) \equiv$\\
+
+        $(\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \land (False \longrightarrow_L False) \equiv$\\
+
+        $(\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \land True \equiv$ \\ 
+        
+        $(\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) $
+        
+        \text{Luego juntado todo quedaria:}\\
+
+        $\textcolor{brown}{indices} \land_L (\textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]))$\\
+        
+        \text{Calculamos $I \land B$}\\
+
+        $I\land B \equiv 0\leq i < |S| \land_L 0\leq 2` , 1` < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`] \equiv $ \\
+        
+        $ 0\leq 2` , 1`,i < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`] \equiv \textcolor{red}{C} $\\
+
+        
+        \text{Para verificar la implicaci\'on la separamos por partes:}\\
+
+        \begin{itemize}
+            \item  $\underline{\textcolor{red}{C} \longrightarrow \textcolor{brown}{Indices}}$ \\
+                $0\leq 2` , 1`,i < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`] \longrightarrow 0\leq 2`,i,1`<|S| \land_L (\textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor \textcolor{red}{D}) \equiv$\\
+
+                $0\leq 2` , 1`,i < |S| \longrightarrow  0\leq 2`,i,1`<|S| \equiv True $
+            \item  $\underline{\textcolor{red}{C} \longrightarrow (\textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor \textcolor{red}{D}) }  $\\
+            \text{Para realizar esta implicaci\'on basta con ver que o vale $\textcolor{red}{C}\longrightarrow \textcolor{blue}{Caso1}$ o $\textcolor{red}{C} \longrightarrow \textcolor{green}{Caso2,1}$ o $\textcolor{red}{C} \longrightarrow \textcolor{red}{D}$}\\
+
+            \text{Podemos ver a simple vista que las mas f\'acil de probar es $\textcolor{red}{C} \longrightarrow \textcolor{red}{D}$ }\\
+
+            $0\leq 2` , 1`,i < |S| \land_L (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \longrightarrow (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \equiv$\\
+
+            $(\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \longrightarrow (\forall j : \ent)(0\leq j < i \land j\neq 1` \land j \neq 2`\longrightarrow_L S[j]<S[2`]<S[1`]) \equiv True$
+
+            \text{Como vale este caso, luego vale que $\textcolor{red}{C}\longrightarrow \textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor \textcolor{red}{D}) $}
+        \end{itemize}
+
+    \text{Concluyendo como vale que  $\textcolor{red}{C}\longrightarrow \textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor \textcolor{red}{D}) $ y $\textcolor{red}{C}\longrightarrow \textcolor{brown}{indices}$ entonces vale:}\\
+    \text{$\textcolor{red}{C} \longrightarrow \textcolor{brown}{indices} \land_L \textcolor{blue}{Caso1} \lor (\textcolor{green}{Caso2.1} \lor \textcolor{red}{D}) $}\\
+
+    \text{Por lo tanto vale la prueba $ \{ I \land B \}P \{ I \} $}
+
+
+        
+        
+    \item $\underline{I \land  f_v \leq 0 \longrightarrow \neg B}$ \\
+    \text Del invariante sabemos que $2\leq i \leq |S|$ y de $F_v$ que:
+    \begin{center}
+        $f_v \leq 0 \longleftrightarrow |S| - i \leq 0 \longleftrightarrow |S| \leq i$
+    \end{center}
+    \text Entonces, tenemos $2\leq i \leq |S| \land |S| \leq i$ que implica que $|S| = i$ que a su vez implica a $i \geq |S|$, que es $\neg{B}$.
+
+    \item $\underline{ \{ I \land B \land v_0=|S|-i \}P\{ |S|-i<v_0\} }$ \\
+
+    \text Veamos si $I\land B \land v_0 = |S| - i \longrightarrow
+    wp(if() ... ; i:= i + 1, |S| - i < V_0)$
+
+    $wp(i := i +1, |S| - i < V_0) \equiv$ \\
+    $\equiv |S| - (i+1) < V_0$ \\
+    $\equiv |S| - i - 1 < V_0$ \\
+
+    $wp(if()..., |S| - i - 1 < V_0) \equiv$ \\
+    
+    $\equiv (B \land wp(2' := i, |S| - i - 1 < V_0) \lor (\neg{B} \land wp(Skip, |S| - i - 1< V_0)$ \\
+
+    $wp(2' := i, |S| - i - 1 < V_0) \equiv$ \\
+    
+    $\equiv |S| - i - 1 < V_0$ \\
+
+    \text Nos basta con probar: \\
+    $B \land wp(2' := i, |S| - i - 1 < V_0) \equiv i < |S| \land |S| - i - 1 < V_0$ (La rama positiva del If) \\
+
+    \text Como asumimos B verdadero, la primer mitad de la expresion ya esta probada, nos falta la segunda mitad: \\ $|S| - i - 1 < V_0$ \\
+
+    \text Como asumimos $v_0 = |S| - i$ verdadero lo vamos a utilizar para probar la segunda expresi\'on. Como $v_0$ es igual a $|S| - i$, sabemos que es mayor a cualquier cosa menor que $|S| - i$, como m\'inimo, mayor $|S| - i - 1$, entonces:
+    \begin{center}
+        $v_0 = |S| - i \equiv v_0 > |S| - i - 1$
+    \end{center}
+    \text Esto es exactamente lo que queriamos probar.
+    
+
+    
+   
+    
+\end{enumerate}
+\text{Una vez terminado este Wp del ciclo, continuamos con Wp del codigo anterior al segundo ciclo con respecto al}
+{$P_c$ del segundo ciclo.}\\
+
+$Wp(2:=0, Wp(if(1`=0) then (2`:=1) else (skip), Wp(i:=0,P_{c_2}))) $\\
+
+\text{Vamos calcul\'andolo por partes:}\\
+
+$Wp(i:=0,P_c) \equiv def(0) \land P_{c_0}^i \equiv $\\
+
+$(2`=0 \lor 2`=1) \land 0\leq 1` <|S| \land 1`\neq 2`\land 0=0 \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) \equiv$ \\
+
+$(2`=0 \lor 2`=1) \land 0\leq 1` <|S| \land 1`\neq 2` \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) \equiv \textcolor{red}{E}$ 
+
+$Wp(if\;(1`=0)\; then \; (2`:=1) \; else \;(Skip), \textcolor{red}{E}) \equiv def(1`=0) \land_L (1`=0 \land (Wp(2:=1,\textcolor{red}{E}))\lor(1`\neq 0 \land Wp(Skip,\textcolor{red}{E})) \equiv$\\
+
+$(1`=0 \land def(1) \land_L \textcolor{red}{E}^{2`}_1)          \lor          (1`\neq 0 \land \textcolor{red}{E}) \equiv$\\
+
+$( 1`=0 \land (1=0 \lor 1=1) \land 0\leq 1` <|S| \land 1`\neq 1 \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) )                   \lor  ( 1`\neq 0 \land (2`=0 \lor 2`=1) \land 0\leq 1` <|S| \land 1`\neq 2` \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) ) \equiv$ \\
+
+$( 1`=0 \land True \land 0\leq 1`<|S| \land 0\neq 1 \land |S|\geq 3 \land  (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]))  \lor (  1`\neq 0 \land (2`=0 \lor 2`=1) \land 0\leq 1` <|S| \land 1`\neq 2` \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) ) \equiv $\\
+
+$(1`=0 \land 0 \leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]))              \lor                                     
+  (  1`\neq 0 \land (2`=0 \lor 2`=1) \land 0\leq 1` <|S| \land 1`\neq 2` \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`])) \equiv \textcolor{red}{F}$\\
+
+$Wp(2:=0, \textcolor{red}{F}) \equiv def(0) \land_L \textcolor{red}{F}^{2`}_0 \equiv$\\
+
+$((1`=0 \land 0 \leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]))              \lor                                     
+  (  1`\neq 0 \land (0=0 \lor 0=1) \land 0\leq 1` <|S| \land 1`\neq 0 \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]))) \equiv$\\
+
+$(1`=0 \land \leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) )   \lor  ( 1`\neq 0 \land True \land 0\leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`])) \equiv$\\
+
+$(1`=0 \land \leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) )   \lor  ( 1`\neq 0 \land 0\leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`])) \equiv$ \\
+
+$0\leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`])$
+
+\text{Una vez terminado el c\'odigo anterior al segundo ciclo, calculamos el wp respecto al primer ciclo}\\
+
+
+\begin{itemize}
+    \item $I \equiv  0\leq i\leq|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) $
+    \item $Q_c \equiv 0\leq 1` <|S| \land |S|\geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`])$
+    \item $P_c \equiv  i=0 \land 1`=0 \land |S|\geq 3$ 
+    \item $B \equiv i<|S|$
+    \item $f_v = |S|-i$
+\end{itemize}
+\begin{enumerate}
+
+    \newpage
+    \item $\underline{P_c\longrightarrow I}$\\
+
+    $i=0 \land 1`=0 \land |S|\geq 3 \longrightarrow 0\leq i \leq |S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`])$\\
+
+    \text{Asumimos como verdadero el $P_c$ luego, reemplazamos en el invariante:}\\
+
+    $0\leq 0<|S| \land 0 \leq 0 \leq |S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < 0 \longrightarrow S[j]\leq S[1`]) \equiv$\\
+
+    $True \land True \land True \land (\forall j: \ent)(False \longrightarrow S[j]\leq S[1`]) \equiv True$\\
+
+    \text{Luego vale que $P_c \longrightarrow I$}\\
+        
+    \item  $\underline{I\land \neg B \longrightarrow Q_c }$\\
+        
+        $I \land \neg B \equiv 0\leq i \leq |S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land i\geq |S|\equiv$\\
+
+        $i=|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < |S| \longrightarrow S[j]\leq S[1`]) \equiv Q_c $\\
+
+        \text{Luego $Q_c \longrightarrow Q_c \equiv True$}\\
+        
+        \text{Luego vale que $I \land B  \longrightarrow Q_c$}
+
+        
+    
+    \item $\underline{\{ I \land B \}P \{ I \}}$
+
+    \text{Para esta prueba queremos ver que $I \land B \longrightarrow Wp(P,I)$ siendo P el c\'odigo dentro del primer ciclo.}
+    {Primero calculamos el wp:}\\
+        
+        $Wp(P,I)\equiv Wp(if (S[1`]<S[i]) then (1`:=i) else (Skip), Wp(i:=i+1,I))$\\
+
+         $Wp(i:=i+1, I) \equiv def(i+1) \land_L I^i_{i+1} \equiv$ \\
+
+         $0\leq i+1 \leq |S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`]) \equiv$\\
+
+         $-1\leq i <|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`]) \equiv \textcolor{red}{G}$\\
+
+         $Wp(if\;(S[1`]<S[i])\; then \; (1`:=i) \; else \; skip, \textcolor{red}{G}) \equiv $\\
+         
+         $def(S[1`]<S[i]) \land ((S[1`]<S[i] \land Wp(1`:=i,\textcolor{red}{G}))     \lor       (S[1`]\geq S[i] \land Wp(Skip,\textcolor{red}{G})) \equiv $  \\
+
+         $0\leq i,1`<|S| \land ( (S[1`]<S[i] \land def(i) \land_L \textcolor{red}{G}^{1`}_i)               \lor            (S[1`]\geq S[i] \land \textcolor{red}{G}) ) \equiv $\\
+
+         $0\leq i,1`<|S| \land ( (S[1`]<S[i] \land -1\leq i <|S| \land 0 \leq  i<|S|  \land_L |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`])   )                   \lor                (S[1`] \geq S[i]) \land -1\leq i <|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`]) ) \equiv$\\
+
+         $0\leq i,1`<|S| \land ( (S[1`]<S[i] \land 0 \leq  i<|S| \land |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`]))                     \lor                    (S[1`] \geq S[i] \land -1\leq i <|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`])  )          ) \equiv$\\
+
+         $(S[1`]<S[i] \land 0 \leq i,1`<|S| \land |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`]))           \lor                     
+           (S[1`] \geq S[i] \land  0\leq i,1` <|S| \land_L |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`])) \equiv$\\
+
+         $0 \leq i,1`<|S| \land |S| \geq 3 \land_L (\forall j: \ent)(0\leq j < i+1 \longrightarrow S[j]\leq S[1`]) \equiv \textcolor{red}{H}$\\
+
+         \text{Calculemos que es $I \land B$}\\
+
+         $I \land B \equiv 0\leq i\leq|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land  i<|S| \equiv$ \\
+
+         $ 0 \leq 1`,i<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`])\equiv \textcolor{red}{H}$
+
+         \text{Luego vale que $\textcolor{red}{H} \longrightarrow \textcolor{red}{H} \equiv True$}\\
+
+         \text{Luego vale la prueba de $\{ I \land B \}P \{ I \}$ }
+
+
+    \item $\underline{I \land  f_v \leq 0 \longrightarrow \neg B}$
+
+        $ I \land f_v \leq 0 \equiv 0\leq i\leq|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land |S|-i\leq 0\equiv$\\
+
+        $ 0\leq i\leq|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land |S|\leq i \equiv$ \\
+
+        $ i=|S| \land 0 \leq 1`<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`])\equiv \textcolor{red}{J}$\\
+
+        $\textcolor{red}{J} \longrightarrow i\geq |S| \equiv i=|S| \longrightarrow i\geq |S| \equiv True $\\
+
+        \text{Luego la prueba $I \land  f_v \leq 0 \longrightarrow \neg B$ vale}
+    \item $\underline{ \{ I \land B \land v_0=|S|-i \}P\{ |S|-i<v_0\} }$
+
+    \text Veamos si $I\land B \land v_0 = |S| - i \longrightarrow Wp(if() ... ; i:= i + 1, |S| - i < V_0) $\\
+
+    \text{Calculamos los Wp}\\
+
+    $Wp(i:=i+1,|S|-i<v_0) \equiv def(i+1) \land (|S|-i<v_0)^i_{i+1} \equiv |S|-i-1<v_0 \equiv |S|-i<v_0+1 \equiv \textcolor{red}{K}$\\
+
+    $Wp(if\;(S[1`]<S[i] \; then \; (1`:=i) \; else \; (Skip), \textcolor{red}{K}) \equiv$\\
+    
+    $ def(S[1`]<S[i]) \land (     (S[1`]<S[i] \land Wp(1`:=i, \textcolor{red}{K}))       \lor           (S[1`]\geq S[i] \land Wp(Skip,\textcolor{red}{K}))       ) \equiv$ \\
+
+    $0\leq 1`,i<|S| \land ( (S[1`]<S[i] \land \textcolor{red}{K}^{1`}_i)     \lor (S[1`]\geq S[i] \land \textcolor{red}{K}) ) \equiv$\\
+
+    $0\leq 1`,i<|S| \land ( (S[1`]<S[i] \land  |S|-i<v_0+1) \lor (S[1`]\geq S[i] \land |S|-i<v_0+1) \equiv$\\
+
+    $0\leq 1`,i<|S| \land |S|-i<v_0+1  \equiv \textcolor{red}{L}$
+
+    \text{Luego queremos ver que $I \land B \land v_0 = |S|-i \longrightarrow \textcolor{red}{L}$} \\
+
+    \text{Calculemos que es $I \land B \land v_0 = |S|-i$ }
+
+    $I \land B \land v_0 = |S|-i \equiv$\\
+
+    $0 \leq 1`,i<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land v_0 =|S|-i$\\
+
+    \text{Luego:}\\
+
+    $0 \leq 1`,i<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land v_0 =|S|-i \longrightarrow 0\leq 1`,i<|S| \land |S|-i<v_0+1 $
+
+    \begin{itemize}
+        \item $0 \leq 1`,i<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land v_0 =|S|-i \longrightarrow 0\leq 1`,i<|S| \equiv $\\
+
+         $0 \leq 1`,i<|S \longrightarrow 0\leq 1`,i<|S| \equiv True $\\
+         
+
+        \item $0 \leq 1`,i<|S|  \land_L |S| \geq 3 \land (\forall j: \ent)(0\leq j < i \longrightarrow S[j]\leq S[1`]) \land v_0 =|S|-i \longrightarrow |S|-i<v_0+1 \equiv $\\
+
+        $v_0 =|S|-i \longrightarrow |S|-i<v_0+1 \equiv v_0<v_0+1 \equiv True$\\
+       
+    \end{itemize}
+
+    \text{Como valen ambas implicaciones por separado, vale la implicacion conjunta}\\
+
+    \text{Luego vale la prueba $\{ I \land B \land v_0=|S|-i \}P\{ |S|-i<v_0\}$}
+    
+   
+    \text{Una vez terminado de probar el teorema del invariante, seguimos calculando el Wp del c\'odigo anterior al primer}
+    {ciclo respecto a la precondici\'on del primer ciclo} \\
+
+    $Wp(i:=0, i=0 \land 1`=0 \land |S|\geq 3) \equiv def(0) \land 0=0 \land 1`=0 \land |S|\geq 3 \equiv 1`=0 \land |S|\geq3$\\
+
+    $Wp(1`:=0, 1`=0 \land |S|\geq3) \equiv def(0) \land_L 0=0 \land |S|\geq 3 \equiv |S|\geq 3$\\
+
+    \text{Luego el Wp(Programa,Post) $\equiv |S|\geq 3$} \\
+
+    \text{Para comprobar que el algoritmo es correcto respecto a su especificacion debemos validar la siguiente implicaci\'on:}\\
+
+    $Pre \Longrightarrow |S|\geq 3 \equiv$\\
+
+    $nohayRepetidos(S) \land cantVotosValidos(S) \land minimoDePartidos(S) \longrightarrow |S|\geq 3 \equiv$\\
+
+    $nohayRepetidos(S) \land cantVotosValidos(S) \land |S|\geq 3\longrightarrow |S|\geq 3 \equiv$\\
+
+    $|S|\geq 3 \longrightarrow |S|\geq 3 \equiv True$\\
+
+    \text{Luego el algoritmo es correcto respecto a su especificaci\'on}
+\end{enumerate} 
+\end{document}
+
+  
